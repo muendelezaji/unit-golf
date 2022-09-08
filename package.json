@@ -6,8 +6,19 @@
   "bin": {
     "unit-golf": "src/cli.js"
   },
-  "scripts": {},
-  "devDependencies": {},
+  "scripts": {
+    "build:macos": "pkg -t macos --out-path dist/ .",
+    "build": "npm run build:macos",
+    "clean": "shx rm -rf dist/ && shx echo Cleaned!",
+    "copy:assets": "shx cp -r node_modules/puppeteer/.local-chromium dist/puppeteer",
+    "dist": "npm run build && npm run copy:assets",
+    "rebuild": "npm run clean && npm run dist",
+    "test": "npm run rebuild && ./dist/unit-golf -h"
+  },
+  "devDependencies": {
+    "pkg": "^5.8.0",
+    "shx": "^0.3.4"
+  },
   "dependencies": {
     "chalk": "^2.4.2",
     "minimist": "^1.2.0",

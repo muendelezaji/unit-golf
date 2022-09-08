@@ -1,3 +1,4 @@
+const path = require("path");
 const puppeteer = require("puppeteer");
 
 const UNITS = [
@@ -41,7 +42,21 @@ const measureUnits = (value, units) => {
 };
 
 const getUnits = async ({ input, width, height }) => {
-  const browser = await puppeteer.launch();
+  // Support for single-binary builds with pkg
+  // See: https://github.com/vercel/pkg/issues/204
+  const packagedBrowserPath = puppeteer.executablePath();
+  const marker = '.local-chromium/';
+  const markerIndex = packagedBrowserPath.indexOf(marker);
+  const relativePath = packagedBrowserPath.slice(markerIndex + marker.length);
+
+  const sideloadBrowserPath = process.pkg
+    ? path.join(path.dirname(process.execPath), 'puppeteer', relativePath)
+    : packagedBrowserPath;
+
+  const executablePath =
+    process.env.PUPPETEER_EXECUTABLE_PATH || sideloadBrowserPath;
+
+  const browser = await puppeteer.launch({ executablePath });
   const page = await browser.newPage();
   await page.setViewport({ width, height });
   const units = await page.evaluate(measureUnits, input, UNITS);
